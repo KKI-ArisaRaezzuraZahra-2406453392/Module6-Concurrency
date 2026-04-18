@@ -2,8 +2,15 @@
 Based on my observation, when http://127.0.0.1:7878 is first accessed, the server successfully printed "Connection established!" multiple times in the terminal. This occurs because modern browsers often attempt to open multiple connections or retry requests automatically if they do not receive an immediate response. 
 After that attempt, a handle_connection function is implemented. This is a function to process incoming TCP streams. The function utilizes BufReader to create a buffered reader for the TcpStream, which is more efficient for reading text-based data. The code basically iterates through the request, ensuring each line is correctly read or else program panics on error. It then tell the server to stop reading once it encounters the empty line that separates the HTTP headers from the request body, and collect the headers into a `Vec<String>` to get printed to the terminal. After these changes, the logs finally show a detailed HTTP request including the GET method, Host, User-Agent, and various Sec-Fetch headers.
 
+
 ## Milestone 2 Reflection
 To return an actual HTML file instead of just printing to the terminal, `fs::read_to_string("hello.html").unwrap()` is added to the handle_connection. This new code will read the contents of my external HTML file into a string for the response body. A proper HTTP response needs a specific structure to be understood by the browser, so `status_line` (HTTP/1.1 200 OK) and `Content-Length` header are then defined. The response then must be written following the standard HTTP format where the status line, headers, and body are separated by specific newlines (\r\n). Finally, the `stream.write_all(response.as_bytes()).unwrap()`converts that formatted string into bytes and transmits it through the TCP stream to the client.
 
-![Commit 2 screen capture](/assets/images/commit2.png)
+![Commit 2 screen capture - return HTML page](/assets/images/commit2.png)
 
+
+## Milestone 3 Reflection
+The code from previous milestone is improved here by extracting the first line of the HTTP request using `buf_reader.lines().next().unwrap().unwrap()`. This line will then contains the HTTP method and path requested by the browser. While the overall logic inside the block (to retrive the html file) is the same, an `if-else` block is implemented around it to validate and response selectively. The conditional checks if the request_line matches "GET / HTTP/1.1", if it does, the server will responds with a `200 OK` status and the main `hello.html` file. While for any other request, the server will return a `404 NOT FOUND` status line and a dedicated `404.html` error page. 
+The refactor happen because the original `if-else` block have a lot of repetition, this essentially break the DRY (Don't Repeat Yourself) principle. By refactoring, the shared tasks are moved outside the conditional block and let the `if-else` branch responsible only for determining status line and html file name to return. This makes the code cleaner, easier to read, and less prone to errors if the response formatting needs to be changed later in the future.
+
+![Commit 3 screen capture - 404 Not Found Page](/assets/images/commit3.png)
