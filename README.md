@@ -14,3 +14,7 @@ The code from previous milestone is improved here by extracting the first line o
 The refactor happen because the original `if-else` block have a lot of repetition, this essentially break the DRY (Don't Repeat Yourself) principle. By refactoring, the shared tasks are moved outside the conditional block and let the `if-else` branch responsible only for determining status line and html file name to return. This makes the code cleaner, easier to read, and less prone to errors if the response formatting needs to be changed later in the future.
 
 ![Commit 3 screen capture - 404 Not Found Page](/assets/images/commit3.png)
+
+
+## Milestone 4 Reflection
+In this milestone, I see a simulation of how slow response is implemented to observe the limitations of a single-threaded server. To do this simulation, a new route (`GET /sleep HTTP/1.1`) was added to the `match` block. This route will triggers a `thread::sleep(Duration::from_secs(10))` before returning a response, mimicking a heavy task or slow database query. The simulation shows how a slow route on one user can affect the entire server, basically making it unresponsive for other users. This happens because the server processes requests sequentially within a single thread, meaning it must fully finish handling the current connection before returning to the loop to call `handle_connection` for the next one. This simulation clearly show how important a multithreaded approach is to ensure high throughput and better user experience.
